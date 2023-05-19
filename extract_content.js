@@ -1,17 +1,18 @@
 // テスト実行
-testByCode()
+// testByCode()
 testByFile()
 
 // Yahooリアルタイム検索結果から結果一覧を取得する
 function extractContentsByYahooRealtimeSearch (html) {
     const rawContents = extractRawContents(html)
-    const contents = removeTags(rawContents)
-    return contents
+    const contents1 = removeTags(rawContents)
+    const contents2 = removeSpaces(contents1)
+    return contents2
 }
 
 // 目的のタグ内のコンテンツを取り出し、コンテンツ文字列の配列を返す
 function extractRawContents (html) {
-    const result = html.match(/(?<=<p class="Tweet_body__XtDoj">).*?(?=<\/p>)/g)
+    const result = html.match(/(?<=<p class="Tweet_body__XtDoj">)[\s\S]*?(?=<\/p>)/g)
     if (!result) {
         return []
     }
@@ -22,6 +23,14 @@ function extractRawContents (html) {
 function removeTags (contents) {
     const result = contents.map(v => {
         return v.replace(/(<([^>]+)>)/gi, '')
+    })
+    return result
+}
+
+// コンテンツ内の空白を全て削除する
+function removeSpaces (contents) {
+    const result = contents.map(v => {
+        return v.replace(/ /gi, '')
     })
     return result
 }
