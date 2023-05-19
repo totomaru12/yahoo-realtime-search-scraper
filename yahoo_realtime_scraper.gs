@@ -1,9 +1,36 @@
+// 最大キーワード数
+const KEYWORD_COUNT_MAX = 5
+
 // 本スクリプトを実行する
 function appScript() {
   console.log('appScript: start')
 
+  // 指定キーワード分のスクレイプを繰り返す
+  for (let i = 2; i < 2 + KEYWORD_COUNT_MAX; i++) {
+    scrapeByKeyword(i)
+  }
+  
+  console.log('appScript: end')
+}
+
+// 指定行番号の検索ワードをスクレイプする
+function scrapeByKeyword(keywordRow) {
+  console.log(`scrape start: keywordRow=${keywordRow}`)
+
+  console.log('start get keyword')
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getActiveSheet()
+  const keyword = sheet.getRange(keywordRow, '1').getValue()
+  console.log('end get keyword')
+
+  console.log('check if keyword defines')
+  if (!keyword) {
+    console.log(`skip search: keywordRow=${keywordRow}`)
+    return
+  }
+
   console.log('start fetch')
-  const response = UrlFetchApp.fetch('https://search.yahoo.co.jp/realtime/search?p=テストテスト')
+  const response = UrlFetchApp.fetch(`https://search.yahoo.co.jp/realtime/search?p=${keyword}`)
   console.log('end fetch')
 
   console.log('start parse')
@@ -12,16 +39,15 @@ function appScript() {
   console.log('end parse')
 
   console.log('start write result')
-  const sheet = SpreadsheetApp.getActiveShaeet(); 
   contents.forEach((v, i) => {
-    const column = '2'
+    const column = keywordRow
     const row = `${2 + i}`
     sheet.getRange(row, column).setValue(v)
-    console.log(`wrote: [${row}, ${column}]: ${v}`)
+    // console.log(`wrote: [${row}, ${column}]: ${v}`)
   })
   console.log('end write result')
-  
-  console.log('appScript: end')
+
+  console.log(`scrape end: keywordRow=${keywordRow}`)
 }
 
 // Yahooリアルタイム検索結果から結果一覧を取得する
