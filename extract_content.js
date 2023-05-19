@@ -1,13 +1,10 @@
-// テスト実行
-// testByCode()
-testByFile()
-
 // Yahooリアルタイム検索結果から結果一覧を取得する
 function extractContentsByYahooRealtimeSearch (html) {
     const rawContents = extractRawContents(html)
     const contents1 = removeTags(rawContents)
     const contents2 = removeSpaces(contents1)
-    return contents2
+    const contents3 = removeReturnCode(contents2)
+    return contents3
 }
 
 // 目的のタグ内のコンテンツを取り出し、コンテンツ文字列の配列を返す
@@ -31,6 +28,14 @@ function removeTags (contents) {
 function removeSpaces (contents) {
     const result = contents.map(v => {
         return v.replace(/ /gi, '')
+    })
+    return result
+}
+
+// コンテンツ内の改行コードを全て削除する
+function removeReturnCode (contents) {
+    const result = contents.map(v => {
+        return v.replace(/\n/gi, '')
     })
     return result
 }
@@ -61,3 +66,7 @@ function testByFile() {
     const contents = extractContentsByYahooRealtimeSearch(html)
     console.log(contents)
 }
+
+// テスト実行
+testByCode()
+testByFile()
