@@ -20,11 +20,20 @@ function appScript() {
     if (0 < thisResults.length) {
       const newResults = getNewSearchResults(keywordRow, thisResults)
       saveSearchResults (keywordRow, thisResults)
-      // TODO: newResultsを使用して通知を出す
+      noticeNewResults (newResults)
     }
   }
   
   console.log('appScript: end')
+}
+
+// 新しい検索結果を通知する
+function noticeNewResults (newResults) {
+  console.log(`noticeNewResults: start`)
+  newResults.forEach((v) => {
+    // TODO: 通知処理を実装する
+    console.log(`notice > ${v}`)
+  })
 }
 
 // 新しい検索結果一覧を取得する
