@@ -58,7 +58,7 @@ function getNewSearchResults (keywordRow, thisResults) {
   console.log('get new result')
   const newResults = []
   thisResults.forEach((v) => {
-    if (!latestRecordMap[v]) {
+    if (!latestRecordMap[v.tweet]) {
       console.log('new result >', v)
       newResults.push(v)
     }
@@ -80,8 +80,8 @@ function saveSearchResults (keywordRow, thisResults) {
   console.log('start write result')
   thisResults.forEach((v, i) => {
     const recordRow = `${LATEST_RECORD_START_ROW + i}`
-    sheet.getRange(recordRow, recordColumn).setValue(v)
-    // console.log(`wrote: [${recordRow}, ${recordColumn}]: ${v}`)
+    sheet.getRange(recordRow, recordColumn).setValue(v.tweet)
+    // console.log(`wrote: [${recordRow}, ${recordColumn}]: ${v.tweet}`)
   })
   console.log('end write result')
   
