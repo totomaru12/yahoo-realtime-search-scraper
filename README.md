@@ -27,5 +27,12 @@
 - 以下のタグに囲まれた文字列の一覧を抽出している
 
 ```html
+// ツイート内容
 <p class="Tweet_body__XtDoj"></p>
+
+// アカウント名
+<span class="Tweet_authorName__V3waK"></span>
+
+// アカウントURL
+<a class="Tweet_authorID__B1U8c">
 ```
