@@ -32,7 +32,7 @@ function noticeNewResults (newResults) {
   console.log(`noticeNewResults: start`)
   newResults.forEach((v) => {
     // TODO: 通知処理を実装する
-    console.log(`notice > ${v}`)
+    console.log('notice >', v)
   })
 }
 
@@ -59,7 +59,7 @@ function getNewSearchResults (keywordRow, thisResults) {
   const newResults = []
   thisResults.forEach((v) => {
     if (!latestRecordMap[v]) {
-      console.log(`new result: ${v}`)
+      console.log('new result >', v)
       newResults.push(v)
     }
   })
@@ -122,7 +122,50 @@ function scrapeByKeyword(keywordRow) {
 
 // Yahooリアルタイム検索結果から結果一覧を取得する
 function extractContentsByYahooRealtimeSearch (html) {
-    const rawContents = extractRawContents(html)
+    const tweetList = extractTweets(html)
+    const accountNameList = extractTweetAccountNameList(html)
+    const accountUrlList = extractTweetAccountUrlList(html)
+    const results = []
+    for (let i = 0; i < tweetList.length; i++) {
+        results.push({
+            tweet: tweetList[i],
+            accountName: getValueSafely(accountNameList, i, 'accountNameList'),
+            accountUrl: getValueSafely(accountUrlList, i, 'accountUrlList'),
+        })
+    }
+    return results
+}
+
+// 配列データを安全に取得する
+function getValueSafely (list, index, label) {
+    if (index < 0 || list.length <= index) {
+        console.error(`Tried access out of ${label}`)
+        return ''
+    }
+    return list[index]
+}
+
+// ツイートアカウントURL一覧を取得
+function extractTweetAccountUrlList (html) {
+    const result = html.match(/(?<=class="Tweet_authorID__B1U8c"[\s\S]{0,128}href=").+?(?=")/g)
+    if (!result) {
+        return []
+    }
+    return result
+}
+
+// ツイートアカウント名一覧を取得
+function extractTweetAccountNameList (html) {
+    const result = html.match(/(?<=class="Tweet_authorName__V3waK">)[\s\S]*?(?=<\/span>)/g)
+    if (!result) {
+        return []
+    }
+    return result
+}
+
+// ツイートメッセージ一覧を取得
+function extractTweets (html) {
+    const rawContents = extractRawTweets(html)
     const contents1 = removeTags(rawContents)
     const contents2 = removeSpaces(contents1)
     const contents3 = removeReturnCode(contents2)
@@ -130,7 +173,7 @@ function extractContentsByYahooRealtimeSearch (html) {
 }
 
 // 目的のタグ内のコンテンツを取り出し、コンテンツ文字列の配列を返す
-function extractRawContents (html) {
+function extractRawTweets (html) {
     const result = html.match(/(?<=<p class="Tweet_body__XtDoj">)[\s\S]*?(?=<\/p>)/g)
     if (!result) {
         return []
