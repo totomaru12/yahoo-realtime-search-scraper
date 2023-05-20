@@ -7,17 +7,25 @@ function extractContentsByYahooRealtimeSearch (html) {
     for (let i = 0; i < tweetList.length; i++) {
         results.push({
             tweet: tweetList[i],
-            // TODO: 配列外アクセスガード処理を追加する
-            accountName: accountNameList[i],
-            accountUrl: accountUrlList[i],
+            accountName: getValueSafely(accountNameList, i, 'accountNameList'),
+            accountUrl: getValueSafely(accountUrlList, i, 'accountUrlList'),
         })
     }
     return results
 }
 
+// 配列データを安全に取得する
+function getValueSafely (list, index, label) {
+    if (index < 0 || list.length <= index) {
+        console.error(`Tried access out of ${label}`)
+        return ''
+    }
+    return list[index]
+}
+
 // ツイートアカウントURL一覧を取得
 function extractTweetAccountUrlList (html) {
-const result = html.match(/(?<=class="Tweet_authorID__B1U8c"[\s\S]{0,128}href=").+?(?=")/g)
+    const result = html.match(/(?<=class="Tweet_authorID__B1U8c"[\s\S]{0,128}href=").+?(?=")/g)
     if (!result) {
         return []
     }
