@@ -4,21 +4,36 @@ const KEYWORD_COUNT_MAX = 5
 // 最大直近検索結果記憶数
 const LATEST_RECORD_COUNT_MAX = 256
 
+// 直近検索結果保存行番号
+const LATEST_RECORD_START_ROW = 2
+
+// 検索定義開始行番号
+const SEARCH_KEYWORD_START_ROW = 2
+
 // 本スクリプトを実行する
 function appScript() {
   console.log('appScript: start')
 
   // 指定キーワード分のスクレイプを繰り返す
-  for (let keywordRow = 2; keywordRow < 2 + KEYWORD_COUNT_MAX; keywordRow++) {
+  for (let keywordRow = SEARCH_KEYWORD_START_ROW; keywordRow < SEARCH_KEYWORD_START_ROW + KEYWORD_COUNT_MAX; keywordRow++) {
     const thisResults = scrapeByKeyword(keywordRow)
     if (0 < thisResults.length) {
       const newResults = getNewSearchResults(keywordRow, thisResults)
       saveSearchResults (keywordRow, thisResults)
-      // TODO: newResultsを使用して通知を出す
+      noticeNewResults (newResults)
     }
   }
   
   console.log('appScript: end')
+}
+
+// 新しい検索結果を通知する
+function noticeNewResults (newResults) {
+  console.log(`noticeNewResults: start`)
+  newResults.forEach((v) => {
+    // TODO: 通知処理を実装する
+    console.log('notice >', v)
+  })
 }
 
 // 新しい検索結果一覧を取得する
@@ -32,7 +47,7 @@ function getNewSearchResults (keywordRow, thisResults) {
 
   console.log('get latest search result')
   const latestRecordMap = {}
-  for (let i = 2; i < 2 + LATEST_RECORD_COUNT_MAX; i++) {
+  for (let i = LATEST_RECORD_START_ROW; i < LATEST_RECORD_START_ROW + LATEST_RECORD_COUNT_MAX; i++) {
     const record = sheet.getRange(i, recordColumn).getValue()
     if (!record) {
       break
@@ -44,7 +59,7 @@ function getNewSearchResults (keywordRow, thisResults) {
   const newResults = []
   thisResults.forEach((v) => {
     if (!latestRecordMap[v]) {
-      console.log(`new result: ${v}`)
+      console.log('new result >', v)
       newResults.push(v)
     }
   })
@@ -64,7 +79,7 @@ function saveSearchResults (keywordRow, thisResults) {
 
   console.log('start write result')
   thisResults.forEach((v, i) => {
-    const recordRow = `${2 + i}`
+    const recordRow = `${LATEST_RECORD_START_ROW + i}`
     sheet.getRange(recordRow, recordColumn).setValue(v)
     // console.log(`wrote: [${recordRow}, ${recordColumn}]: ${v}`)
   })
@@ -107,7 +122,50 @@ function scrapeByKeyword(keywordRow) {
 
 // Yahooリアルタイム検索結果から結果一覧を取得する
 function extractContentsByYahooRealtimeSearch (html) {
-    const rawContents = extractRawContents(html)
+    const tweetList = extractTweets(html)
+    const accountNameList = extractTweetAccountNameList(html)
+    const accountUrlList = extractTweetAccountUrlList(html)
+    const results = []
+    for (let i = 0; i < tweetList.length; i++) {
+        results.push({
+            tweet: tweetList[i],
+            accountName: getValueSafely(accountNameList, i, 'accountNameList'),
+            accountUrl: getValueSafely(accountUrlList, i, 'accountUrlList'),
+        })
+    }
+    return results
+}
+
+// 配列データを安全に取得する
+function getValueSafely (list, index, label) {
+    if (index < 0 || list.length <= index) {
+        console.error(`Tried access out of ${label}`)
+        return ''
+    }
+    return list[index]
+}
+
+// ツイートアカウントURL一覧を取得
+function extractTweetAccountUrlList (html) {
+    const result = html.match(/(?<=class="Tweet_authorID__B1U8c"[\s\S]{0,128}href=").+?(?=")/g)
+    if (!result) {
+        return []
+    }
+    return result
+}
+
+// ツイートアカウント名一覧を取得
+function extractTweetAccountNameList (html) {
+    const result = html.match(/(?<=class="Tweet_authorName__V3waK">)[\s\S]*?(?=<\/span>)/g)
+    if (!result) {
+        return []
+    }
+    return result
+}
+
+// ツイートメッセージ一覧を取得
+function extractTweets (html) {
+    const rawContents = extractRawTweets(html)
     const contents1 = removeTags(rawContents)
     const contents2 = removeSpaces(contents1)
     const contents3 = removeReturnCode(contents2)
@@ -115,7 +173,7 @@ function extractContentsByYahooRealtimeSearch (html) {
 }
 
 // 目的のタグ内のコンテンツを取り出し、コンテンツ文字列の配列を返す
-function extractRawContents (html) {
+function extractRawTweets (html) {
     const result = html.match(/(?<=<p class="Tweet_body__XtDoj">)[\s\S]*?(?=<\/p>)/g)
     if (!result) {
         return []
