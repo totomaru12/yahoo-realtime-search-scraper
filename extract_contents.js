@@ -2,14 +2,26 @@
 function extractContentsByYahooRealtimeSearch (html) {
     const tweetList = extractTweets(html)
     const accountNameList = extractTweetAccountNameList(html)
+    const accountUrlList = extractTweetAccountUrlList(html)
     const results = []
     for (let i = 0; i < tweetList.length; i++) {
         results.push({
             tweet: tweetList[i],
+            // TODO: 配列外アクセスガード処理を追加する
             accountName: accountNameList[i],
+            accountUrl: accountUrlList[i],
         })
     }
     return results
+}
+
+// ツイートアカウントURL一覧を取得
+function extractTweetAccountUrlList (html) {
+const result = html.match(/(?<=class="Tweet_authorID__B1U8c"[\s\S]{0,128}href=").+?(?=")/g)
+    if (!result) {
+        return []
+    }
+    return result
 }
 
 // ツイートアカウント名一覧を取得
