@@ -4,12 +4,18 @@ const KEYWORD_COUNT_MAX = 5
 // 最大直近検索結果記憶数
 const LATEST_RECORD_COUNT_MAX = 256
 
+// 直近検索結果保存行番号
+const LATEST_RECORD_START_ROW = 2
+
+// 検索定義開始行番号
+const SEARCH_KEYWORD_START_ROW = 2
+
 // 本スクリプトを実行する
 function appScript() {
   console.log('appScript: start')
 
   // 指定キーワード分のスクレイプを繰り返す
-  for (let keywordRow = 2; keywordRow < 2 + KEYWORD_COUNT_MAX; keywordRow++) {
+  for (let keywordRow = SEARCH_KEYWORD_START_ROW; keywordRow < SEARCH_KEYWORD_START_ROW + KEYWORD_COUNT_MAX; keywordRow++) {
     const thisResults = scrapeByKeyword(keywordRow)
     if (0 < thisResults.length) {
       const newResults = getNewSearchResults(keywordRow, thisResults)
@@ -32,7 +38,7 @@ function getNewSearchResults (keywordRow, thisResults) {
 
   console.log('get latest search result')
   const latestRecordMap = {}
-  for (let i = 2; i < 2 + LATEST_RECORD_COUNT_MAX; i++) {
+  for (let i = LATEST_RECORD_START_ROW; i < LATEST_RECORD_START_ROW + LATEST_RECORD_COUNT_MAX; i++) {
     const record = sheet.getRange(i, recordColumn).getValue()
     if (!record) {
       break
@@ -64,7 +70,7 @@ function saveSearchResults (keywordRow, thisResults) {
 
   console.log('start write result')
   thisResults.forEach((v, i) => {
-    const recordRow = `${2 + i}`
+    const recordRow = `${LATEST_RECORD_START_ROW + i}`
     sheet.getRange(recordRow, recordColumn).setValue(v)
     // console.log(`wrote: [${recordRow}, ${recordColumn}]: ${v}`)
   })
