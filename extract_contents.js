@@ -45,7 +45,7 @@ function extractTweetAccountNameList (html) {
 function extractTweets (html) {
     const rawContents = extractRawTweets(html)
     const contents1 = removeTags(rawContents)
-    const contents2 = removeSpaces(contents1)
+    const contents2 = convertSpacesToOne(contents1)
     const contents3 = removeReturnCode(contents2)
     return contents3
 }
@@ -67,10 +67,10 @@ function removeTags (contents) {
     return result
 }
 
-// コンテンツ内の空白を全て削除する
-function removeSpaces (contents) {
+// コンテンツ内の連続するスペースを１つにする
+function convertSpacesToOne (contents) {
     const result = contents.map(v => {
-        return v.replace(/ /gi, '')
+        return v.replace(/ +/gi, ' ')
     })
     return result
 }
